@@ -14,7 +14,7 @@ if NOTATE:
 if SKIP_PLAYBACK:
     s.fast_forward()
     
-# section1.play()
+section1.play()
 random.seed(42)
 section2thru4.play()
     

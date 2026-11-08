@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import dataclass, field
 from playback_setup import play_hit, categories
 import random
@@ -28,7 +29,7 @@ class Pattern:
                 # when hocket = 0.5, it should bounce between 1 and 2 and 3, and it should transition gracefully
                 total_num_instr = len(self.instruments)
                 num_instruments = 1 + sum(random.random() >= self.hocket for _ in range(total_num_instr - 1))
-                if num_instruments == 3:
+                if num_instruments == total_num_instr:
                     clump_instr = self.instruments
                 else:
                     clump_instr = [self.next_player(self.instruments) for _ in range(num_instruments)]
