@@ -19,7 +19,7 @@ perc_mapping = {
     "metal": [51, 46, 81]
 }
 
-categories = ["skin", "wood", "metal"]
+categories = ["metal", "wood", "skin"]
 
 
 def play_hit(instruments: list[str], low_mid_hi: int, volume, 
