@@ -23,7 +23,7 @@ class Pattern:
         
         for pitch_clump, dur_clump in zip(self.pitches, self.durs):
             if self.hocket:
-                # we want num instruments to be between 1 and len(instruments)
+                # I want num instruments to be between 1 and len(instruments)
                 # when hocket = 1, it should be always 1
                 # when hocket = 0, it should be always len(instruments)
                 # when hocket = 0.5, it should bounce between 1 and 2 and 3, and it should transition gracefully
@@ -32,7 +32,7 @@ class Pattern:
                 if num_instruments == total_num_instr:
                     clump_instr = self.instruments
                 else:
-                    clump_instr = [self.next_player(self.instruments) for _ in range(num_instruments)]
+                    clump_instr = [self.next_player_in_turn(self.instruments) for _ in range(num_instruments)]
             else:
                 clump_instr = self.instruments
             
@@ -113,8 +113,8 @@ class Pattern:
             
         return variant
         
-    # make sure players are scrambled and won't repeat in hocket
-    def next_player(self, pool):
+    # hand back a new player for every hocketed clump inside play(), make sure no repeat
+    def next_player_in_turn(self, pool):
         if len(self.player_queue) == 0:
             self.player_queue = random.sample(pool, len(pool))
             # keep trying until getting a diff player
@@ -122,10 +122,17 @@ class Pattern:
                 self.player_queue = random.sample(pool, len(pool))
         self.last_player = self.player_queue.pop(0)
         return self.last_player
+    
+    # plays the pattern forever and each repetition goes to the next player
+#     def for_pattern_rotate_instr(self):
+#         instr_pool = self.instruments.copy()
+#         while True:
+#             self.instruments = [self.next_player_in_turn(instr_pool)]
+#             print(self.instruments)
+#             self.play()
 
-    def for_pattern_rotate_instr(self):
-        instr_pool = self.instruments.copy()
-        while True:
-            self.instruments = [self.next_player(instr_pool)]
-            print(self.instruments)
-            self.play()
+    # continue the player turn-taking from the prev pattern 
+    def continue_turns_from(self, prev):
+        self.player_queue = prev.player_queue
+        self.last_player = prev.last_player
+        

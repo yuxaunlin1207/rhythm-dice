@@ -4,7 +4,7 @@ import section2thru4
 import random
 
 NOTATE = True
-SKIP_PLAYBACK = True
+SKIP_PLAYBACK = False
 
 
 if NOTATE:
@@ -14,8 +14,8 @@ if NOTATE:
 if SKIP_PLAYBACK:
     s.fast_forward()
     
+random.seed(42)   
 # section1.play()
-random.seed(42)
 section2thru4.play()
     
 if NOTATE:

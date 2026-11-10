@@ -17,6 +17,7 @@ import random
 def section(pattern, section_len=40):
     print(s.beat())
     section_start = s.beat()
+    section_end = section_start + section_len
     pattern_len = sum(sum(clump) for clump in pattern.durs)
     
     # --- opening unison ---
@@ -28,22 +29,34 @@ def section(pattern, section_len=40):
     for _ in range(reps):
         pattern.play()
         
-    # --- closing hocket ---
+    # --- Plans when the closing section will start, which is 25-35% of the section,
+    # in whole reps, ending exactly at section_end ---
     closing_len = random.uniform(0.25, 0.35) * section_len # a rough random length
     closing_reps = max(2, round(closing_len / pattern_len))
     closing_len = closing_reps * pattern_len # rounded len by num of reps
-    section_end = section_start + section_len
     closing_start = section_end - closing_len
     
     # --- middle ---
     wait(closing_start - s.beat()) # for now
     
-    # -- hocket dail --
+    # -- hocket dial --
     pattern.instruments = categories.copy()
     ramp_reps = 0.75 * closing_reps # how many reps the dail takes to go from 0 to 1
+    
+    reps_per_variant = max(1, round(6 / pattern_len))
+    current_pattern = pattern
+    
+    # every ~6 beats (never at the start), switch to a new variant, keeping the player turns going
     for rep in range(closing_reps):
-        pattern.hocket = min(1, rep / ramp_reps) # never above 1
-        pattern.play()
+        time_for_new_variant = rep != 0 and rep % reps_per_variant == 0
+        if time_for_new_variant:
+            new_variant = pattern.random_variant()
+            new_variant.continue_turns_from(current_pattern)
+            current_pattern = new_variant
+            
+        current_pattern.hocket = min(1, rep / ramp_reps) # never above 1
+        current_pattern.play()
+        
     
     
     
