@@ -1,4 +1,5 @@
 from prototypes import get_pattern
+from copy import deepcopy
 from scamp import *
 from playback_setup import *
 import random
@@ -11,6 +12,13 @@ import random
 #     for i in range(10):
 #         p_all.hocket = i / 9
 #         p_all.play()
+
+
+# wait until it's this voice's turn, and play this voice reps times
+def play_voice(voice, entry_delay, reps):
+    wait(entry_delay)
+    for _ in range(reps):
+        voice.play()
 
 def play_phrases(pattern, middle_end):
     pattern_len = sum(sum(clump) for clump in pattern.durs)
@@ -27,8 +35,43 @@ def play_phrases(pattern, middle_end):
         variant = pattern.random_variant()
         variant.instruments = random.sample(categories, num_players) # num_players play on random instr
         
-        for _ in range(reps):
-            variant.play()
+        if num_players == 1:
+            texture = "unison"
+        else:
+            texture = random.choice(["unison"] + ["canon"] * 3) # choose one texture
+            
+        if texture == "unison":
+            for _ in range(reps):
+                variant.play()
+        else:
+            # order the players, skin leads if present
+            # if skin is among the players
+            # take skin out of the list, then put it back at position 0
+            players = variant.instruments.copy()
+            if "skin" in players:
+                players.remove("skin")
+                players.insert(0, "skin")
+                
+            # roll the gaps between entries: 1-4 beats, half-beat steps
+            delays = [random.randint(2, 8) / 2 for _ in range(num_players -1)]
+            
+            # start each voice in its own fork
+            entry = 0
+            for i, player in enumerate(players):
+                voice = deepcopy(variant)
+                voice.instruments = [player]
+                fork(play_voice, args=(voice, entry, reps))
+                
+                if i < len(delays): # stops from reading past delays
+                    entry += delays[i]
+                    
+            # the phrase ends when the last voice finishes
+            wait_for_children_to_finish()
+            
+            
+            
+        
+        
             
     wait(middle_end - s.beat()) # rest when can't fit in one pattern
 
@@ -81,9 +124,7 @@ def section(pattern, section_len=40):
         
     wait(section_end - s.beat())
     print(s.beat())
-    
-    
-    
+       
     
 # Play sections
 def play():
