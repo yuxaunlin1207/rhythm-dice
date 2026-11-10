@@ -123,13 +123,6 @@ class Pattern:
         self.last_player = self.player_queue.pop(0)
         return self.last_player
     
-    # plays the pattern forever and each repetition goes to the next player
-#     def for_pattern_rotate_instr(self):
-#         instr_pool = self.instruments.copy()
-#         while True:
-#             self.instruments = [self.next_player_in_turn(instr_pool)]
-#             print(self.instruments)
-#             self.play()
 
     # continue the player turn-taking from the prev pattern 
     def continue_turns_from(self, prev):

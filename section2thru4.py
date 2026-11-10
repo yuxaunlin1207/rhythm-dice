@@ -3,8 +3,6 @@ from scamp import *
 from playback_setup import *
 import random
 
-
-
 # def play():
 # #     start_beat = s.beat()
 #     p_all = get_pattern(1)
@@ -13,6 +11,26 @@ import random
 #     for i in range(10):
 #         p_all.hocket = i / 9
 #         p_all.play()
+
+def play_phrases(pattern, middle_end):
+    pattern_len = sum(sum(clump) for clump in pattern.durs)
+    
+    while s.beat() + pattern_len <= middle_end:
+        num_players = random.choice([1, 1, 2, 2, 2, 3]) # 1, 2, or 3 with odds 2:3:1
+        phrase_len = random.uniform(3, 6)
+        
+        # decide how many repetitions on a pattern
+        potential_reps = max(2, round(phrase_len / pattern_len))
+        reps_that_fit = (middle_end - s.beat()) // pattern_len
+        reps = int(min(potential_reps, reps_that_fit))
+        
+        variant = pattern.random_variant()
+        variant.instruments = random.sample(categories, num_players) # num_players play on random instr
+        
+        for _ in range(reps):
+            variant.play()
+            
+    wait(middle_end - s.beat()) # rest when can't fit in one pattern
 
 def section(pattern, section_len=40):
     print(s.beat())
@@ -37,7 +55,7 @@ def section(pattern, section_len=40):
     closing_start = section_end - closing_len
     
     # --- middle ---
-    wait(closing_start - s.beat()) # for now
+    play_phrases(pattern, closing_start)
     
     # -- hocket dial --
     pattern.instruments = categories.copy()
