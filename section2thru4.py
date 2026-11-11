@@ -33,8 +33,8 @@ def make_loose_imitation(voice):
     num_of_grace_notes = min(random.randint(0,2), len(decoratable_notes))
     voice.grace_indices = random.sample(decoratable_notes, num_of_grace_notes)
         
-def round_down_to_half(n):
-    return int(n * 2) / 2
+def round_down_to(n, step):
+    return int(n / step) * step
 
 def play_phrases(pattern, middle_end):
     pattern_len = sum(sum(clump) for clump in pattern.durs)
@@ -51,15 +51,31 @@ def play_phrases(pattern, middle_end):
         variant = pattern.random_variant()
         variant.instruments = random.sample(categories, num_players) # num_players play on random instr
         
+        # get texture
         if num_players == 1:
             texture = "unison"
         else:
-            texture = random.choice(["unison"] + ["canon"] * 3) # choose one texture
+            texture = random.choice(["unison"] + ["canon"] * 3 + ["independent"] * 2) # choose one texture
             
+        # play diff textures    
         if texture == "unison":
             for _ in range(reps):
                 variant.play()
-        else:
+                
+        elif texture == "independent":
+            offsets = [0] + [random.randint(0, 4) / 4 for _ in range(num_players - 1)]
+            room_before_middle_end = middle_end - s.beat() - pattern_len * reps
+            latest_voice = max(offsets)
+            if latest_voice > room_before_middle_end:
+                scale = room_before_middle_end / latest_voice
+                offsets = [round_down_to(offs * scale, 0.25) for offs in offsets]
+            for player, offset in zip(variant.instruments, offsets):
+                voice = pattern.random_variant()
+                voice.instruments = [player]
+                fork(play_voice, args=(voice, offset, reps))
+            wait_for_children_to_finish()
+            
+        elif texture == "canon":
             # order the players, skin leads if present
             # if skin is among the players
             # take skin out of the list, then put it back at position 0
@@ -76,7 +92,7 @@ def play_phrases(pattern, middle_end):
             total_delay = sum(delays)
             if total_delay > room_before_middle_end:
                 scale = room_before_middle_end / total_delay # on what scale to shrink
-                delays = [round_down_to_half(dl * scale) for dl in delays]
+                delays = [round_down_to(dl * scale, 0.5) for dl in delays]
                                 
             # start each voice in its own fork
             entry = 0
