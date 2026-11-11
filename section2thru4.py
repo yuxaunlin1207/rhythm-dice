@@ -4,15 +4,6 @@ from scamp import *
 from playback_setup import *
 import random
 
-# def play():
-# #     start_beat = s.beat()
-#     p_all = get_pattern(1)
-#     p_all.instruments = ["metal", "wood", "skin"]
-# #     while s.beat() - start_beat < 30:
-#     for i in range(10):
-#         p_all.hocket = i / 9
-#         p_all.play()
-
 
 # wait until it's this voice's turn, and play this voice reps times
 def play_voice(voice, entry_delay, reps):
@@ -218,12 +209,41 @@ def section(pattern, section_len=40):
         
     wait(section_end - s.beat())
     print(s.beat())
+    return current_pattern
        
+# -- ending of the piece --
+def tail(last_variant):
+    tail_len = 30 # in beats
+    tail_start = s.beat()
+    tail_end = tail_start + tail_len
     
+    p1 = get_pattern(1)
+    p1.instruments = categories.copy()
+    p1.hocket = 1
+    
+    # CROSSFADE: (~10 beats): Section 4's last variant becomes P1
+    crossfade_len = 10
+    crossfade_end = tail_start + crossfade_len
+    prev = last_variant
+    while s.beat() < crossfade_end:
+        p1_odds = (s.beat() - tail_start) / crossfade_len # progress through the crossfade
+        cur = p1 if random.random() < p1_odds else last_variant
+        cur.continue_turns_from(prev)
+        cur.play()
+        prev = cur
+        
+    wait(tail_end - s.beat())
+    
+    
+
+
+
 # Play sections
 def play():
     section(get_pattern(1))
     section(get_pattern(3))
-    section(get_pattern(2))
+    last_variant = section(get_pattern(2))
+    tail(last_variant)
+    
     
     
