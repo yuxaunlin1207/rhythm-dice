@@ -19,6 +19,9 @@ def play_voice(voice, entry_delay, reps):
     wait(entry_delay)
     for _ in range(reps):
         voice.play()
+        
+def round_down_to_half(n):
+    return int(n * 2) / 2
 
 def play_phrases(pattern, middle_end):
     pattern_len = sum(sum(clump) for clump in pattern.durs)
@@ -54,6 +57,14 @@ def play_phrases(pattern, middle_end):
                 
             # roll the gaps between entries: 1-4 beats, half-beat steps
             delays = [random.randint(2, 8) / 2 for _ in range(num_players -1)]
+            
+            # shrink the canon if it'll run past middle
+            room_before_middle_end = middle_end - s.beat() - pattern_len * reps
+            total_delay = sum(delays)
+            if total_delay > room_before_middle_end:
+                scale = room_before_middle_end / total_delay # on what scale to shrink
+                delays = [round_down_to_half(dl * scale) for dl in delays]
+                                
             
             # start each voice in its own fork
             entry = 0
