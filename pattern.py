@@ -14,6 +14,7 @@ class Pattern:
     grace_indices: list[int] = field(default_factory=list)
     instruments: list[str] = field(default_factory=lambda: list(categories))
     hocket: float = 0
+    volume: float = 1
     player_queue: list[str] = field(default_factory=list)
     last_player: str=None
     
@@ -47,11 +48,11 @@ class Pattern:
                 elif i in self.grace_indices:
                     grace_len = 1/8
                     grace_level = pitch +1 if pitch != 2 and random.random() <= 0.2 else pitch
-                    play_hit(clump_instr, grace_level, 1, grace_len) # play grace note
-                    play_hit(clump_instr, pitch, 1, dur - grace_len) # play main note
+                    play_hit(clump_instr, grace_level, self.volume, grace_len) # play grace note
+                    play_hit(clump_instr, pitch, self.volume, dur - grace_len) # play main note
                     
                 else:
-                    play_hit(clump_instr, pitch, 1, dur)                
+                    play_hit(clump_instr, pitch, self.volume, dur)                
                 i += 1
                 
     # T / F flags for each note

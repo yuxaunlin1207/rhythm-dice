@@ -55,7 +55,11 @@ def play_phrases(pattern, middle_end):
         if num_players == 1:
             texture = "unison"
         else:
-            texture = random.choice(["unison"] + ["canon"] * 3 + ["independent"] * 2) # choose one texture
+            texture = random.choice(["unison"]
+                                    + ["canon"] * 3
+                                    + ["independent"] * 2
+                                    + ["call_and_response"] * 3
+                                    ) # choose one texture
             
         # play diff textures    
         if texture == "unison":
@@ -110,6 +114,53 @@ def play_phrases(pattern, middle_end):
                     
             # the phrase ends when the last voice finishes
             wait_for_children_to_finish()
+            
+        elif texture == "call_and_response":
+            caller_instr = random.choice(variant.instruments)
+            responders = [r for r in variant.instruments if r != caller_instr]
+            
+            loud_call = deepcopy(variant)
+            loud_call.instruments = [caller_instr]
+            soft_call = deepcopy(loud_call)
+            soft_call.volume = 0.3
+            
+            responses = []
+            for player in responders:
+                roll = random.random()
+                # 25% the call transformed, 25% transformed then loose imitation, 50% loose imitation
+                if roll < 0.25:
+                    response = loud_call.random_variant() # returns a transformed copy
+    
+                elif roll < 0.5:
+                    response = loud_call.random_variant()
+                    make_loose_imitation(response)
+                    
+                else:
+                    response = deepcopy(loud_call)
+                    make_loose_imitation(response)
+                    
+                response.instruments = [player]
+                responses.append(response)
+                
+            # back and forth call and response
+            exchanges = reps // 2 # how many 2-rep pairs fit
+            for _ in range(exchanges):
+                loud_call.play()
+                
+                for response in responses:
+                    fork(play_voice, args=(response, 0, 1)) # one time loud response                    
+                soft_call.play() # do the soft ver immediately 
+                wait_for_children_to_finish()
+                
+            # when no time for response    
+            if reps % 2 == 1:
+                loud_call.play()
+                
+                
+                    
+            
+            
+                    
             
             
             
