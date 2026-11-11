@@ -20,6 +20,19 @@ def play_voice(voice, entry_delay, reps):
     for _ in range(reps):
         voice.play()
         
+# skip one note, add 0-2 grace notes when following the leader in canon        
+def make_loose_imitation(voice):
+    durs = [d for clump in voice.durs for d in clump] # one duration per note
+    n = len(durs)
+    
+    #skip one random note
+    skipped = random.randint(0, n-1)
+    voice.skipped_indices = [skipped]
+    # only notes that are 16ths or longer can get grace note
+    decoratable_notes = [i for i in range(n) if durs[i] >= 1/4 and i != skipped]
+    num_of_grace_notes = min(random.randint(0,2), len(decoratable_notes))
+    voice.grace_indices = random.sample(decoratable_notes, num_of_grace_notes)
+        
 def round_down_to_half(n):
     return int(n * 2) / 2
 
@@ -65,12 +78,15 @@ def play_phrases(pattern, middle_end):
                 scale = room_before_middle_end / total_delay # on what scale to shrink
                 delays = [round_down_to_half(dl * scale) for dl in delays]
                                 
-            
             # start each voice in its own fork
             entry = 0
             for i, player in enumerate(players):
                 voice = deepcopy(variant)
                 voice.instruments = [player]
+                
+                if i > 0:
+                    make_loose_imitation(voice)
+                    
                 fork(play_voice, args=(voice, entry, reps))
                 
                 if i < len(delays): # stops from reading past delays

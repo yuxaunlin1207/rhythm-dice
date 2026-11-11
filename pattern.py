@@ -11,6 +11,7 @@ class Pattern:
     durs: list[list[float]]
     skipped_indices: list[int]
     silent_indices: list[int]
+    grace_indices: list[int] = field(default_factory=list)
     instruments: list[str] = field(default_factory=lambda: list(categories))
     hocket: float = 0
     player_queue: list[str] = field(default_factory=list)
@@ -43,6 +44,12 @@ class Pattern:
                     pass # operation NULL
                 elif (i in self.silent_indices) or (i - n in self.silent_indices):
                     wait(dur)
+                elif i in self.grace_indices:
+                    grace_len = 1/8
+                    grace_level = pitch +1 if pitch != 2 and random.random() <= 0.2 else pitch
+                    play_hit(clump_instr, grace_level, 1, grace_len) # play grace note
+                    play_hit(clump_instr, pitch, 1, dur - grace_len) # play main note
+                    
                 else:
                     play_hit(clump_instr, pitch, 1, dur)                
                 i += 1
