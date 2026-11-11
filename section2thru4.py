@@ -146,17 +146,7 @@ def play_phrases(pattern, middle_end):
             # when no time for response    
             if reps % 2 == 1:
                 loud_call.play()
-                
-                
-                    
-            
-            
-                    
-            
-            
-            
-        
-        
+                     
             
     wait(middle_end - s.beat()) # rest when can't fit in one pattern
 
@@ -232,12 +222,20 @@ def tail(last_variant):
         cur.play()
         prev = cur
         
+    # -- regroup (~9 beats) --
+    p1_len = sum(sum(clump) for clump in p1.durs)
+    regroup_reps = round(9 / p1_len)
+    p1.continue_turns_from(prev)
+    
+    for rep in range(regroup_reps):
+        progress = rep / (regroup_reps - 1)
+        p1.hocket = 1 - progress # linear progress
+        # p1.hocket = 1 - progress**2 # curve progress
+        p1.play()
+        
     wait(tail_end - s.beat())
     
     
-
-
-
 # Play sections
 def play():
     section(get_pattern(1))
