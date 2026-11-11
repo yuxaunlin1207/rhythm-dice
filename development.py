@@ -10,7 +10,8 @@ def play_voice(voice, entry_delay, reps):
     wait(entry_delay)
     for _ in range(reps):
         voice.play()
-        
+
+
 # skip one note, add 0-2 grace notes when following the leader in canon        
 def make_loose_imitation(voice):
     durs = [d for clump in voice.durs for d in clump] # one duration per note
@@ -150,15 +151,15 @@ def play_phrases(pattern, middle_end):
             
     wait(middle_end - s.beat()) # rest when can't fit in one pattern
 
-def section(pattern, section_len=40):
+def develop_pattern(pattern, length=40):
     print(s.beat())
     section_start = s.beat()
-    section_end = section_start + section_len
+    section_end = section_start + length
     pattern_len = sum(sum(clump) for clump in pattern.durs)
     
     # --- opening unison ---
     pattern.instruments = random.sample(categories,random.randint(1,3)) # choose players
-    opening_len = random.randint(10, 15) *.01 * section_len
+    opening_len = random.randint(10, 15) *.01 * length
     reps = max(2, round(opening_len / pattern_len)) # make repetition at least 2
     print(pattern.instruments,reps)
     
@@ -167,7 +168,7 @@ def section(pattern, section_len=40):
         
     # --- Plans when the closing section will start, which is 25-35% of the section,
     # in whole reps, ending exactly at section_end ---
-    closing_len = random.uniform(0.25, 0.35) * section_len # a rough random length
+    closing_len = random.uniform(0.25, 0.35) * length # a rough random length
     closing_reps = max(2, round(closing_len / pattern_len))
     closing_len = closing_reps * pattern_len # rounded len by num of reps
     closing_start = section_end - closing_len
@@ -193,73 +194,6 @@ def section(pattern, section_len=40):
         current_pattern.hocket = min(1, rep / ramp_reps) # never above 1
         current_pattern.play()
         
-    
-    
-    
-        
     wait(section_end - s.beat())
     print(s.beat())
     return current_pattern
-       
-# -- ending of the piece --
-def tail(last_variant):
-    tail_len = 30 # in beats
-    tail_start = s.beat()
-    tail_end = tail_start + tail_len
-    
-    p1 = get_pattern(1)
-    p1.instruments = categories.copy()
-    p1.hocket = 1
-    
-    # CROSSFADE: (~10 beats): Section 4's last variant becomes P1
-    crossfade_len = 10
-    crossfade_end = tail_start + crossfade_len
-    prev = last_variant
-    while s.beat() < crossfade_end:
-        p1_odds = (s.beat() - tail_start) / crossfade_len # progress through the crossfade
-        cur = p1 if random.random() < p1_odds else last_variant
-        cur.continue_turns_from(prev)
-        cur.play()
-        prev = cur
-        
-    # -- regroup (~9 beats) --
-    p1_len = sum(sum(clump) for clump in p1.durs)
-    regroup_reps = round(9 / p1_len)
-    p1.continue_turns_from(prev)
-    
-    for rep in range(regroup_reps):
-        progress = rep / (regroup_reps - 1)
-        p1.hocket = 1 - progress # linear progress
-        # p1.hocket = 1 - progress**2 # curve progress
-        p1.play()
-        
-        
-    # -- Ending: tutti to hocket to wood solo --
-    ending_reps = int((tail_end - s.beat()) // p1_len)
-    leaving_order = random.sample(["skin", "metal"], 2)
-    exit_points = [ending_reps // 3, 2 * ending_reps // 3]
-    
-    for rep in range(ending_reps):
-        if rep in exit_points:
-            p1.instruments.remove(leaving_order.pop(0))
-            p1.player_queue = []
-            
-        progress = rep / max(1, ending_reps - 1)
-        p1.hocket = progres
-        # p1.hocket = progress ** 2 # stays near tutti longer, then fades out
-        p1.play()
-    
-    
-        
-    wait(tail_end - s.beat())
-    
-    
-# Play sections
-def play():
-    section(get_pattern(1))
-    section(get_pattern(3))
-    last_variant = section(get_pattern(2))
-    tail(last_variant)
-    
-    
-    
