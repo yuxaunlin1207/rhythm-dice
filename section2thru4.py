@@ -233,6 +233,24 @@ def tail(last_variant):
         # p1.hocket = 1 - progress**2 # curve progress
         p1.play()
         
+        
+    # -- Ending: tutti to hocket to wood solo --
+    ending_reps = int((tail_end - s.beat()) // p1_len)
+    leaving_order = random.sample(["skin", "metal"], 2)
+    exit_points = [ending_reps // 3, 2 * ending_reps // 3]
+    
+    for rep in range(ending_reps):
+        if rep in exit_points:
+            p1.instruments.remove(leaving_order.pop(0))
+            p1.player_queue = []
+            
+        progress = rep / max(1, ending_reps - 1)
+        p1.hocket = progres
+        # p1.hocket = progress ** 2 # stays near tutti longer, then fades out
+        p1.play()
+    
+    
+        
     wait(tail_end - s.beat())
     
     
