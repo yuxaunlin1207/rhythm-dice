@@ -12,11 +12,13 @@
    overlapping hits). p5.js draws the screen. */
 
 // ---------------------------------------------------------------- audio setup
-// Audio mode: "playback" ignores the silent switch on newer iOS. The Sound check
-// screen can switch to "auto" if a phone stays silent in "playback".
-let audioMode = localStorage.getItem("phonePercussionAudioMode") || "playback";
+// "Play sound in silent mode" setting (Sound check screen).
+//   ON  -> iOS "playback" audio: plays even when the phone is on silent (recommended).
+//   OFF -> iOS "ambient" audio:  muted when the phone is on silent.
+// Turn it OFF only if a phone makes no sound with it ON.
+let playInSilent = localStorage.getItem("phonePercussionPlayInSilent") !== "off";
 function applyAudioMode() {
-  try { if (navigator.audioSession) navigator.audioSession.type = audioMode; } catch (e) {}
+  try { if (navigator.audioSession) navigator.audioSession.type = playInSilent ? "playback" : "ambient"; } catch (e) {}
 }
 applyAudioMode();
 
@@ -237,10 +239,13 @@ for (const [id, cfg] of Object.entries(PLAYERS)) {
 
 // ---------------------------------------------------------------- sound check
 function updateDiag() {
-  const session = navigator.audioSession ? navigator.audioSession.type : "not available";
-  setText("diag", `Audio: ${ctx.state} · ${ctx.sampleRate} Hz · mode: ${session}`,
+  $("silentToggle").checked = playInSilent;
+  $("silentState").textContent = playInSilent ? "ON (recommended)" : "OFF";
+  const silentText = !navigator.audioSession ? "silent-mode setting not supported here"
+    : playInSilent ? "plays in silent mode ✓" : "muted in silent mode ⚠︎";
+  const ios = navigator.audioSession ? ` (iOS: ${navigator.audioSession.type})` : "";
+  setText("diag", `Audio: ${ctx.state} · ${silentText}${ios}`,
           ctx.state === "running" ? "good" : "bad");
-  $("modeBtn").textContent = `Switch audio mode (now: ${audioMode})`;
 }
 
 // Test 1: a beep made by web audio (the engine the app uses).
@@ -263,10 +268,10 @@ $("fileBtn").addEventListener("click", () => {
   a.play().catch((e) => setText("diag", "Plain audio failed: " + e.message, "bad"));
 });
 
-// Switch between "playback" and "auto" audio modes and rebuild the audio engine.
-$("modeBtn").addEventListener("click", () => {
-  audioMode = audioMode === "playback" ? "auto" : "playback";
-  localStorage.setItem("phonePercussionAudioMode", audioMode);
+// "Play sound in silent mode" toggle: change the iOS audio type and rebuild the audio engine.
+$("silentToggle").addEventListener("change", () => {
+  playInSilent = $("silentToggle").checked;
+  localStorage.setItem("phonePercussionPlayInSilent", playInSilent ? "on" : "off");
   applyAudioMode();
   try { ctx.close(); } catch (e) {}
   makeContext();

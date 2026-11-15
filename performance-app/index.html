@@ -63,6 +63,14 @@
     display: block; width: 100%; margin: 10px auto; padding: 14px; font-size: 16px;
     color: #ddd; background: #1d1d1d; border: 1px solid #3a3a3a; border-radius: 10px;
   }
+  #silentRow {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin: 10px auto 0; padding: 12px 14px; text-align: left; color: #ddd; font-size: 16px;
+    background: #1d1d1d; border: 1px solid #3a3a3a; border-radius: 10px;
+  }
+  #silentRow b { font-weight: 500; font-size: 13px; color: #999; }
+  #silentToggle { width: 26px; height: 26px; flex: none; }
+  .hint { font-size: 13px !important; color: #777 !important; margin: 8px 0 0; }
   .good { color: #6c6 !important; }
   .bad { color: #e77 !important; }
   .hidden { display: none !important; }
@@ -96,7 +104,11 @@
     <p>Test 1 should beep. Test 2 should thump.</p>
     <button id="beepBtn">Test 1: beep</button>
     <button id="fileBtn">Test 2: sound file</button>
-    <button id="modeBtn">Switch audio mode</button>
+    <label id="silentRow">
+      <span>Play sound in silent mode<br><b id="silentState"></b></span>
+      <input type="checkbox" id="silentToggle" switch>
+    </label>
+    <p class="hint">Keep this ON. Turn it OFF only if Test 1 makes no sound while ON.</p>
     <p id="diag" class="status"></p>
   </details>
 </div>

@@ -92,7 +92,7 @@ Keep a list of what you changed, so you can turn everything back on after the co
 Do this backstage, about 15 minutes before you go on. Tick every box.
 
 - [ ] Battery is above 50%.
-- [ ] **Silent mode is OFF.** Use the switch or Action button on the side of the phone.
+- [ ] **Silent mode is OFF.** Use the switch or Action button on the side of the phone. The app normally plays even on silent, but this is a safety net.
 - [ ] **Volume is all the way up.**
 - [ ] **Do Not Disturb is ON.** Swipe down from the top-right corner → **Focus** → **Do Not Disturb**.
 - [ ] Bluetooth is OFF, so the sound can't go to someone's headphones or a car.
@@ -137,13 +137,28 @@ Your part (Player 1, 2, or 3) has its own set of sounds, so the three phones sou
 
 | Problem | Fix |
 |---|---|
-| No sound at all | Turn Silent mode off and turn the volume up. Then lock and unlock the phone and hold the screen again. |
+| No sound at all | Turn Silent mode off and turn the volume up. Then lock and unlock the phone and hold the screen again. If there's still no sound, see **Sound check** below. |
 | The menu says "Could not load" | Connect to Wi-Fi and open the app again from the Home Screen icon. |
 | The app opened the part menu instead of the black screen | Tap your part again. |
 | After unlocking, I see the Home Screen, not the app | Tap the **Phone Perc** icon. It returns to your black screen. |
 | The keyboard won't appear | Hold longer, until the line is fully drawn, then lift your thumb. |
 | Extra or missing sounds while typing | Re-check every setting in Part 3, especially Predictive Text and Auto-Correction. |
 | Sound plays from headphones/another device | Turn Bluetooth off. |
+
+### Sound check
+
+Use this if the phone makes no sound but white dots appear when you type.
+
+1. Tap **change part** at the bottom of the black screen.
+2. Open **Sound check** at the bottom of the menu.
+3. Tap **Test 1: beep** and **Test 2: sound file**. You should hear a beep and a thump.
+4. Check the switch **Play sound in silent mode**. It should be **ON**.
+5. If Test 1 makes no sound with the switch ON, turn it **OFF** and try Test 1 again.
+   - **If it now beeps,** leave it OFF on this phone. From now on, **this player must check that Silent mode is off before every performance**, because with the switch OFF the phone goes quiet on silent.
+   - **If it still makes no sound,** turn the switch back ON and contact the composer.
+6. Choose your part again.
+
+The phone remembers this setting.
 
 ---
 
@@ -160,6 +175,17 @@ Tips for loud, clear sounds on a phone speaker:
 - Normalize each file close to full level.
 - Phone speakers can't play deep bass. Sounds above about 200 Hz carry best.
 - Trim silence from the start of each file so it plays the instant a key is pressed.
+
+### The "Play sound in silent mode" switch
+
+This switch sets the type of iOS audio the app uses:
+
+| Switch | iOS audio type | Behavior |
+|---|---|---|
+| **ON** (default) | Playback | Plays even when the phone is on silent. Stops other apps' audio. |
+| **OFF** | Ambient | Muted when the phone is on silent. Mixes with other apps' audio. |
+
+ON is recommended for performance, so a phone switched to silent by accident still sounds. OFF exists as a fallback for a phone that stays silent with ON. The setting is saved on each phone separately.
 
 ### Testing on a computer
 
