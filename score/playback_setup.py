@@ -6,9 +6,9 @@ s.tempo = 60
 perc_playback = s.new_part("Playback Part", preset="Standard")
 
 notated_parts = {
-    "metal": s.new_silent_part("Perc 1"),
-    "wood": s.new_silent_part("Perc 2"),
-    "skin": s.new_silent_part("Perc 3 ")
+    "metal": s.new_silent_part("Metal"),
+    "wood": s.new_silent_part("Wood"),
+    "skin": s.new_silent_part("Skin")
 }
 
 notated_pitches = [67, 71, 74]
