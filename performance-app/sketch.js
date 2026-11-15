@@ -4,8 +4,9 @@
    How it works:
    1. Sounds are loaded and decoded into memory when the app opens.
    2. The player picks a part (saved on the phone), then sees a black standby screen.
-   3. Holding the standby screen unlocks audio and opens the iPhone keyboard.
-   4. Each key typed into a hidden text box plays the sound mapped to it.
+   3. Holding the standby screen unlocks audio and shows the app's own keyboard.
+   4. Each key plays its sound the moment a finger touches it (not on release).
+      Several fingers can play several keys at once.
    5. Locking the phone or leaving the app returns to standby.
 
    Sound uses the Web Audio API directly (lowest latency, any number of
@@ -65,11 +66,10 @@ function updateInfo() {
 }
 
 const SPECIAL = ["space", "backspace", "return", "other"];
-const SENTINEL = "        "; // the hidden text box always holds these spaces so backspace always works
 
 // ---------------------------------------------------------------- elements
 const $ = (id) => document.getElementById(id);
-const keysEl = $("keys");
+const kbEl = $("kb");
 const standbyEl = $("standby");
 const setupEl = $("setup");
 const holdArea = $("holdArea");
@@ -134,22 +134,99 @@ function hit(name) {
   hits.push({ x: Math.random(), y: Math.random(), t: performance.now() });
 }
 
-function resetField() {
-  keysEl.value = SENTINEL;
-  keysEl.setSelectionRange(SENTINEL.length, SENTINEL.length);
-}
+// ---------------------------------------------------------------- on-screen keyboard
+// Each key: a letter, or [name, label, width]. Names match config.js.
+// "shift" and "123" aren't in config.js, so they play the "other" sound.
+const LAYOUT = [
+  ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
+  ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+  [["shift", "⇧", 1.4], "z", "x", "c", "v", "b", "n", "m", ["backspace", "⌫", 1.4]],
+  [["123", "123", 1.25], ["space", "space", 5], ["return", "return", 2.25]],
+];
 
-keysEl.addEventListener("input", (e) => {
-  if (mode !== "live") { resetField(); return; }
-  const type = e.inputType || "";
-  if (type.startsWith("delete")) hit("backspace");
-  else if (type === "insertLineBreak" || type === "insertParagraph") hit("return");
-  else if (type === "insertText" && e.data) {
-    for (const ch of e.data.slice(0, 4)) hit(ch === " " ? "space" : ch.toLowerCase());
+LAYOUT.forEach((row, i) => {
+  const rowEl = document.createElement("div");
+  rowEl.className = "row" + (i === 1 ? " inset" : "");
+  for (const k of row) {
+    const [name, label, width] = typeof k === "string" ? [k, k, 1] : k;
+    const keyEl = document.createElement("div");
+    keyEl.className = "key" + (name.length > 1 ? " mod" : "");
+    keyEl.dataset.key = name;
+    keyEl.style.flexGrow = width;
+    const cap = document.createElement("div");
+    cap.className = "cap";
+    cap.textContent = label;
+    keyEl.appendChild(cap);
+    rowEl.appendChild(keyEl);
   }
-  // Autocorrect replacements and other edits are ignored on purpose.
-  resetField();
+  kbEl.appendChild(rowEl);
 });
+
+const held = new Map(); // finger (touch id) -> key it pressed
+
+function pressKey(keyEl) {
+  if (mode !== "live" || !keyEl) return;
+  keyEl.classList.add("down");
+  hit(keyEl.dataset.key);
+}
+function releaseKey(keyEl) { if (keyEl) keyEl.classList.remove("down"); }
+function keyAt(target) { return target && target.closest ? target.closest(".key") : null; }
+
+// Sound on touch-down. Each new finger is handled separately.
+kbEl.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    const keyEl = keyAt(t.target);
+    if (!keyEl) continue;
+    held.set(t.identifier, keyEl);
+    pressKey(keyEl);
+  }
+}, { passive: false });
+
+// Lifting a finger only clears the highlight. It never makes a sound.
+function onTouchUp(e) {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    releaseKey(held.get(t.identifier));
+    held.delete(t.identifier);
+  }
+}
+kbEl.addEventListener("touchend", onTouchUp, { passive: false });
+kbEl.addEventListener("touchcancel", onTouchUp, { passive: false });
+kbEl.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+
+// For testing on a computer: mouse clicks and the computer keyboard.
+let mouseKey = null;
+kbEl.addEventListener("mousedown", (e) => { mouseKey = keyAt(e.target); pressKey(mouseKey); });
+document.addEventListener("mouseup", () => { releaseKey(mouseKey); mouseKey = null; });
+
+function computerKeyName(e) {
+  if (e.key === " ") return "space";
+  if (e.key === "Backspace") return "backspace";
+  if (e.key === "Enter") return "return";
+  if (e.key === "Shift") return "shift";
+  if (e.key.length === 1) return e.key.toLowerCase();
+  return null;
+}
+document.addEventListener("keydown", (e) => {
+  if (mode !== "live" || e.repeat || e.metaKey || e.ctrlKey) return;
+  const name = computerKeyName(e);
+  if (!name) return;
+  e.preventDefault();
+  const keyEl = kbEl.querySelector(`[data-key="${CSS.escape(name)}"]`);
+  if (keyEl) keyEl.classList.add("down");
+  hit(name);
+});
+document.addEventListener("keyup", (e) => {
+  const name = computerKeyName(e);
+  const keyEl = name && kbEl.querySelector(`[data-key="${CSS.escape(name)}"]`);
+  releaseKey(keyEl);
+});
+
+function clearKeys() {
+  held.clear();
+  kbEl.querySelectorAll(".down").forEach(releaseKey);
+}
 
 // ---------------------------------------------------------------- modes
 let wakeLock = null;
@@ -168,14 +245,15 @@ function goLive() {
   unlockAudio();
   mode = "live";
   standbyEl.classList.add("hidden");
-  resetField();
-  keysEl.focus(); // must happen during the touch, or iOS won't show the keyboard
+  clearKeys();
+  kbEl.classList.remove("hidden");
   try { navigator.wakeLock?.request("screen").then((l) => (wakeLock = l)).catch(() => {}); } catch (e) {}
 }
 
 function goStandby() {
   mode = "standby";
-  keysEl.blur();
+  kbEl.classList.add("hidden");
+  clearKeys();
   setupEl.classList.add("hidden");
   standbyEl.classList.remove("hidden");
   try { wakeLock?.release(); } catch (e) {}
@@ -184,7 +262,8 @@ function goStandby() {
 
 function goSetup() {
   mode = "setup";
-  keysEl.blur();
+  kbEl.classList.add("hidden");
+  clearKeys();
   localStorage.removeItem("phonePercussionPlayer");
   standbyEl.classList.add("hidden");
   setupEl.classList.remove("hidden");
@@ -325,7 +404,7 @@ function draw() {
   const now = performance.now();
   hits = hits.filter((h) => now - h.t < 600);
   noStroke();
-  const top = height * 0.45; // stay above the keyboard
+  const top = kbEl.getBoundingClientRect().top; // stay above the keyboard
   for (const h of hits) {
     const a = 1 - (now - h.t) / 600;
     fill(255, 200 * a);

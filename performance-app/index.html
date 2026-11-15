@@ -21,13 +21,23 @@
   }
   canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
-  /* The invisible text box that receives the iPhone keyboard's typing. */
-  #keys {
-    position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1;
-    margin: 0; padding: 0; border: 0; outline: 0; resize: none;
-    background: transparent; color: transparent; caret-color: transparent;
-    font-size: 16px; /* 16px or more stops iOS from zooming in */
+  /* The app's own on-screen keyboard. Keys sound on touch-down, not on release. */
+  #kb {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1;
+    padding: 6px 2px calc(env(safe-area-inset-bottom) + 8px);
+    background: #232325; touch-action: none;
   }
+  .row { display: flex; height: 54px; }
+  .row.inset { padding: 0 5%; }               /* middle row sits half a key in */
+  .key { flex: 1 1 0; display: flex; padding: 5px 3px; box-sizing: border-box; }
+  .cap {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; background: #636366; color: #fff;
+    font-size: 23px; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+  }
+  .key.mod .cap { background: #3a3a3c; font-size: 16px; }
+  .key.down .cap { background: #9a9aa0; }
+  .key.mod.down .cap { background: #6e6e73; }
 
   /* Black standby screen: hold to start. */
   #standby { position: fixed; inset: 0; z-index: 2; background: #000; }
@@ -78,8 +88,7 @@
 </head>
 <body>
 
-<textarea id="keys" autocomplete="off" autocorrect="off" autocapitalize="off"
-          spellcheck="false" inputmode="text" enterkeyhint="enter" aria-label="Keys"></textarea>
+<div id="kb" class="hidden" aria-label="Keyboard"></div>
 
 <div id="standby" class="hidden">
   <div id="holdArea">
