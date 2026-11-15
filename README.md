@@ -4,7 +4,7 @@
 
 This piece is a work in progress for percussion trio that will consist of three movements. It explores the idea of creating a gradual crossfade between music composed entirely by hand and music generated solely by a computer under human guidance. The work seeks to investigate how traditional compositional techniques, computer-assisted algorithmic composition, and computer-driven composition produce different musical results when given exactly the same raw motifs and instrumental constraints as starting points for development.
 
-**Duration:** ca. 15 minutes · **Movements:** I. One Notch at a Time  II. Rhythm Dice  III. title TBA
+**Duration:** ca. 15 minutes · **Movements:** I. One Notch at a Time    II. Rhythm Dice    III. Title TBA
 
 This repository holds the two technical parts of the piece:
 
@@ -26,7 +26,7 @@ Allow about 30 minutes for the first setup and 2 minutes before each rehearsal.
 
 > **Please keep the phones a surprise.** The phone section works only if the audience doesn't expect it. Don't mention phones or electronics in program notes, posters, or stage announcements, and keep phones out of sight until the moment marked in the score.
 
-**Score and parts:** [where to get them, e.g. "available from the composer" or a publisher link]
+**Score and parts:** available from the composer. Please contact: linyuxuan127@gmail.com or fill in the contact form at https://yuxuanlin.com/
 
 ---
 
@@ -40,26 +40,26 @@ The code does not write the finished score by itself. I ran it with many seeds, 
 
 | File | What it does |
 |---|---|
-| `development.py` | [develops each pattern into its unique section] |
-| `[main.py]` | [runs the entire piece from beginning to end] |
-| `[opening.py]` | [runs the hardcoded beginning of the movement] |
-| `[pattern.py]` | [a collections of patterns, i.e. motifs of the piece] |
-| `[playback_setup.py]` | [maps the pitches and sets up the score] |
-| `[prototypes.py]` | [a collection of methods that prototypes developmental ideas] |
-| `[tail.py]` | [ending of the piece] |
+| `development.py` | develops each pattern into its unique section |
+| `main.py` | runs the entire piece from beginning to end |
+| `opening.py` | runs the hardcoded beginning of the movement |
+| `pattern.py` | a collections of patterns, i.e. motifs of the piece |
+| `playback_setup.py` | maps the pitches and sets up the score |
+| `prototypes.py` | a collection of methods that prototypes developmental ideas |
+| `tail.py` | ending of the piece |
 
 ### Running it
 
-You need Python [3.x] and SCAMP:
+You need Python 3.12 and SCAMP:
 
 ```
-pip install scamp [other packages]
+pip install scamp
 ```
 
 Then, from the `score/` folder:
 
 ```
-python [main_file.py] [--seed 1234]
+python main.py
 ```
 
 ### Seeds used in the piece
@@ -86,4 +86,4 @@ permission requests, please fill out the contact form in https://yuxuanlin.com/.
 
 ## Contact
 
-Yuxuan Lin · https://yuxuanlin.com/ · contact form included in website
+Yuxuan Lin: https://yuxuanlin.com/ Contact form included in website.
