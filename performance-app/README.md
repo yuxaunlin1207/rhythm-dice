@@ -23,7 +23,7 @@ No speakers, cables, or sound system are needed. The sound comes from the phones
 The app is a small website. Each phone downloads it once and keeps a copy, so after that it works with no internet.
 
 > **Shortcut:** if the composer's link below still works, skip to Part 2.
-> Composer's link: `[add link here]`
+> Composer's link: `https://yuxaunlin1207.github.io/rhythm-dice/performance-app/`
 
 Otherwise, host your own free copy with GitHub Pages:
 
