@@ -12,19 +12,43 @@
    overlapping hits). p5.js draws the screen. */
 
 // ---------------------------------------------------------------- audio setup
-try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {} // ignore the silent switch (newer iOS)
+// Audio mode: "playback" ignores the silent switch on newer iOS. The Sound check
+// screen can switch to "auto" if a phone stays silent in "playback".
+let audioMode = localStorage.getItem("phonePercussionAudioMode") || "playback";
+function applyAudioMode() {
+  try { if (navigator.audioSession) navigator.audioSession.type = audioMode; } catch (e) {}
+}
+applyAudioMode();
 
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
-const ctx = new AudioCtx({ latencyHint: "interactive" });
+let ctx, limiter;
 
-// Gentle limiter so many overlapping hits don't distort.
-const limiter = ctx.createDynamicsCompressor();
-limiter.threshold.value = -1;
-limiter.knee.value = 0;
-limiter.ratio.value = 20;
-limiter.attack.value = 0.001;
-limiter.release.value = 0.05;
-limiter.connect(ctx.destination);
+function makeContext() {
+  ctx = new AudioCtx({ latencyHint: "interactive" });
+  // Gentle limiter so many overlapping hits don't distort.
+  limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -1;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.05;
+  limiter.connect(ctx.destination);
+}
+makeContext();
+
+// A tiny silent sound played through a normal <audio> element during a touch.
+// On iPhone this switches the phone into "media playback", which web audio needs.
+function makeSilentWavURL() {
+  const n = 4410, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVE"); w(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 44100, true); v.setUint32(28, 88200, true); v.setUint16(32, 2, true);
+  v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, n * 2, true);
+  return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+}
+const unlockEl = new Audio(makeSilentWavURL());
+unlockEl.setAttribute("playsinline", "");
 
 const buffers = new Map(); // file path -> decoded audio
 let player = null;         // the chosen part from PLAYERS
@@ -128,9 +152,11 @@ keysEl.addEventListener("input", (e) => {
 // ---------------------------------------------------------------- modes
 let wakeLock = null;
 
+// Must be called during a touch. Wakes the phone's audio in every known way.
 function unlockAudio() {
-  ctx.resume();
-  // Playing one silent sample fully wakes audio on older iPhones.
+  if (ctx.state === "closed") makeContext();
+  try { unlockEl.currentTime = 0; unlockEl.play().catch(() => {}); } catch (e) {}
+  ctx.resume().then(updateDiag, updateDiag);
   const b = ctx.createBuffer(1, 1, ctx.sampleRate);
   const s = ctx.createBufferSource();
   s.buffer = b; s.connect(ctx.destination); s.start();
@@ -208,6 +234,46 @@ for (const [id, cfg] of Object.entries(PLAYERS)) {
   });
   $("playerButtons").appendChild(b);
 }
+
+// ---------------------------------------------------------------- sound check
+function updateDiag() {
+  const session = navigator.audioSession ? navigator.audioSession.type : "not available";
+  setText("diag", `Audio: ${ctx.state} · ${ctx.sampleRate} Hz · mode: ${session}`,
+          ctx.state === "running" ? "good" : "bad");
+  $("modeBtn").textContent = `Switch audio mode (now: ${audioMode})`;
+}
+
+// Test 1: a beep made by web audio (the engine the app uses).
+$("beepBtn").addEventListener("click", () => {
+  unlockAudio();
+  const osc = ctx.createOscillator(), g = ctx.createGain();
+  osc.frequency.value = 880;
+  g.gain.setValueAtTime(0.5, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+  osc.connect(g); g.connect(ctx.destination);
+  osc.start(); osc.stop(ctx.currentTime + 0.4);
+  setTimeout(updateDiag, 200);
+});
+
+// Test 2: one of the sound files through a plain <audio> element (no web audio).
+$("fileBtn").addEventListener("click", () => {
+  const first = [].concat(Object.values(PLAYERS)[0].keys.space)[0];
+  const a = new Audio(first);
+  a.setAttribute("playsinline", "");
+  a.play().catch((e) => setText("diag", "Plain audio failed: " + e.message, "bad"));
+});
+
+// Switch between "playback" and "auto" audio modes and rebuild the audio engine.
+$("modeBtn").addEventListener("click", () => {
+  audioMode = audioMode === "playback" ? "auto" : "playback";
+  localStorage.setItem("phonePercussionAudioMode", audioMode);
+  applyAudioMode();
+  try { ctx.close(); } catch (e) {}
+  makeContext();
+  unlockAudio();
+  setTimeout(updateDiag, 200);
+});
+updateDiag();
 
 // ---------------------------------------------------------------- offline
 async function checkOffline() {
