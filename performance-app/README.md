@@ -65,13 +65,15 @@ The phone now remembers your part and works without internet.
 
 ---
 
-## Part 3 — Phone setting (do this once)
+## Part 3 — Phone settings (do this once)
 
-The app uses its own keyboard, so you don't need to change any iPhone keyboard settings. Only one setting matters:
+The app uses its own keyboard, so you don't need to change any iPhone keyboard settings. Only two settings matter:
 
 **Settings → Display & Brightness → Auto-Lock**: set to **Never**. You will lock the phone yourself with the side button.
 
-Set it back after the concert.
+**Settings → Sounds & Haptics → Lock Sound**: turn **OFF**. The app plays its own lock sound, so the phone's quiet click shouldn't sound later when you press the real side button.
+
+Set both back after the concert.
 
 ---
 
@@ -85,7 +87,7 @@ Do this backstage, about 15 minutes before you go on. Tick every box.
 - [ ] **Do Not Disturb is ON.** Swipe down from the top-right corner → **Focus** → **Do Not Disturb**.
 - [ ] Bluetooth is OFF, so the sound can't go to someone's headphones or a car.
 - [ ] Open **Phone Perc** from the Home Screen. The black screen should show your part and **offline ✓** at the bottom.
-- [ ] **Test it:** hold the black screen until the line fills, let go, tap a few keys, and listen.
+- [ ] **Test it:** hold the black screen until the line fills, let go, tap a few keys, and listen. Then tap **lock screen** (top right). You should hear the lock sound and the screen should go black.
 - [ ] **Lock the phone** with the side button. This takes it back to the black screen.
 - [ ] Put the phone in your pocket, screen facing your leg.
 
@@ -111,13 +113,19 @@ When the score tells you to take out your phone:
 | Delete (⌫) | snap |
 | Return | thump |
 | ⇧ (shift) and 123 | small tick |
+| **lock screen** button (top right) | lock sound, then the screen goes black |
 
 Your part (Player 1, 2, or 3) has its own set of sounds, so the three phones sound different from each other.
+
+5. **To end, tap lock screen** (top right, next to the real side button) when the score tells you. It sounds the instant your finger touches it. The keyboard disappears and the screen goes black, just like locking the phone.
+6. Put the phone away. You can press the real side button now or later. The screen is already black, so the audience won't see any change.
 
 **Tips**
 - Hold the phone up and toward the audience when the score allows. Phone speakers are small, and the speaker is on the bottom edge.
 - You can press several keys at once, for example with both thumbs. Each one makes its own sound.
-- Only the keyboard plays. Touching the black area above it does nothing.
+- Only the keyboard and the **lock screen** button play. Touching the black area between them does nothing.
+- Keep your fingers away from the top-right corner while playing, so you don't tap **lock screen** by accident.
+- To play again after locking, hold the black screen until the line fills, as at the start.
 - Nothing is typed on screen, only small fading dots appear. That's normal.
 - The keyboard doesn't vibrate like the normal iPhone keyboard. That's expected.
 
@@ -133,6 +141,8 @@ Your part (Player 1, 2, or 3) has its own set of sounds, so the three phones sou
 | After unlocking, I see the Home Screen, not the app | Tap the **Phone Perc** icon. It returns to your black screen. |
 | The keyboard won't appear | Hold longer, until the line is fully drawn, then lift your thumb. |
 | Some taps make no sound | Make sure you're touching the keyboard at the bottom of the screen. The black area above it doesn't play. |
+| The screen went black by accident while playing | A finger touched **lock screen** (top right). Hold the black screen to start again, and keep your grip away from that corner. |
+| Tapping **lock screen** makes no sound | The screen still locks. Connect to Wi-Fi and reopen the app so it can download the lock sound. |
 | Sound plays from headphones/another device | Turn Bluetooth off. |
 
 ### Sound check
@@ -157,7 +167,7 @@ The phone remembers this setting.
 ### Changing the sounds
 
 1. Put your sound files (`.wav` or `.mp3`, under one second each) in `sounds/p1`, `sounds/p2`, or `sounds/p3`.
-2. Open `config.js` in any text editor. For each player, set which keys play which file. The instructions are at the top of the file. On the phone's keyboard, the ⇧ and 123 keys play the `"other"` sound.
+2. Open `config.js` in any text editor. For each player, set which keys play which file. The instructions are at the top of the file. On the phone's keyboard, the ⇧ and 123 keys play the `"other"` sound, and the **lock screen** button plays the `"lock"` sound (with no random pitch change).
 3. Upload the changed files to the same GitHub repository (**Add file → Upload files**).
 4. On each phone, while on Wi-Fi: open the app and wait about 10 seconds. It downloads the new files and saves them automatically.
 
@@ -179,7 +189,7 @@ ON is recommended for performance, so a phone switched to silent by accident sti
 
 ### Testing on a computer
 
-From the project folder, run `python3 -m http.server 8000` and open `http://localhost:8000` in a browser. Choose a part, click and hold the black screen, release, then click the on-screen keys or type on your computer keyboard. Like on the phone, sounds play on press.
+From the project folder, run `python3 -m http.server 8000` and open `http://localhost:8000` in a browser. Choose a part, click and hold the black screen, release, then click the on-screen keys or type on your computer keyboard. Like on the phone, sounds play on press. Click **lock screen** or press **Esc** to test the lock.
 
 ### Files
 
@@ -187,7 +197,7 @@ From the project folder, run `python3 -m http.server 8000` and open `http://loca
 |---|---|
 | `config.js` | **Sounds and key mapping. The only file you normally edit.** |
 | `index.html` | The page and its layout |
-| `sketch.js` | The program: loads sounds, draws the on-screen keyboard, plays a sound on each key press, draws visuals (p5.js) |
+| `sketch.js` | The program: loads sounds, draws the on-screen keyboard and **lock screen** button, plays a sound on each press, draws visuals (p5.js) |
 | `sw.js` | Saves all files on the phone for offline use |
 | `manifest.json` | Makes the Home Screen icon open full-screen |
 | `lib/p5.min.js` | The p5.js library (v1.11), stored locally so nothing loads from the internet |

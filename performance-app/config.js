@@ -27,7 +27,8 @@ const SHOW_VISUALS = true;
      "space"      the space bar
      "backspace"  the delete key
      "return"     the return key
-     "other"      any key not listed (numbers, punctuation, etc.)
+     "other"      any key not listed (on the phone: the ⇧ and 123 keys)
+     "lock"       the "lock screen" button at the top right
 
    pitchVariation: small random pitch change on each hit, so repeated
                    notes sound less mechanical (0 = off, 0.03 = subtle).
@@ -46,6 +47,7 @@ const PLAYERS = {
       "backspace":  "sounds/p1/snap.wav",
       "return":     "sounds/p1/thump.wav",
       "other":      "sounds/p1/tick.wav",
+      "lock":       "sounds/p1/screen-lock.wav",
     },
     pitchVariation: 0.02,
     volume: 1.0,
@@ -61,6 +63,7 @@ const PLAYERS = {
       "backspace":  "sounds/p2/snap.wav",
       "return":     "sounds/p2/thump.wav",
       "other":      "sounds/p2/tick.wav",
+      "lock":       "sounds/p2/screen-lock.wav",
     },
     pitchVariation: 0.02,
     volume: 1.0,
@@ -76,6 +79,7 @@ const PLAYERS = {
       "backspace":  "sounds/p3/snap.wav",
       "return":     "sounds/p3/thump.wav",
       "other":      "sounds/p3/tick.wav",
+      "lock":       "sounds/p3/screen-lock.wav",
     },
     pitchVariation: 0.02,
     volume: 1.0,

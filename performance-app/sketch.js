@@ -7,7 +7,8 @@
    3. Holding the standby screen unlocks audio and shows the app's own keyboard.
    4. Each key plays its sound the moment a finger touches it (not on release).
       Several fingers can play several keys at once.
-   5. Locking the phone or leaving the app returns to standby.
+   5. The "lock screen" button (top right) plays the lock sound and returns to
+      standby. Locking the real phone or leaving the app also returns to standby.
 
    Sound uses the Web Audio API directly (lowest latency, any number of
    overlapping hits). p5.js draws the screen. */
@@ -65,11 +66,12 @@ function updateInfo() {
     (player ? player.label : "") + (offlineReady ? "  ·  offline ✓" : "  ·  not saved offline yet");
 }
 
-const SPECIAL = ["space", "backspace", "return", "other"];
+const SPECIAL = ["space", "backspace", "return", "other", "lock"];
 
 // ---------------------------------------------------------------- elements
 const $ = (id) => document.getElementById(id);
 const kbEl = $("kb");
+const lockBtn = $("lockBtn");
 const standbyEl = $("standby");
 const setupEl = $("setup");
 const holdArea = $("holdArea");
@@ -114,24 +116,28 @@ async function loadPlayer(id) {
 
 // ---------------------------------------------------------------- playing
 function hit(name) {
-  const files = keymap[name] || keymap.other;
-  if (!files || !files.length) return;
+  if (playSound(keymap[name] || keymap.other, player.pitchVariation || 0)) {
+    hits.push({ x: Math.random(), y: Math.random(), t: performance.now() });
+  }
+}
+
+// Plays one of the given files. Returns true if a sound was started.
+function playSound(files, pitchVariation) {
+  if (!files || !files.length) return false;
   const buf = buffers.get(files[Math.floor(Math.random() * files.length)]);
-  if (!buf) return;
+  if (!buf) return false;
   if (ctx.state !== "running") ctx.resume();
 
   const src = ctx.createBufferSource();
   src.buffer = buf;
-  const v = player.pitchVariation || 0;
-  src.playbackRate.value = 1 + (Math.random() * 2 - 1) * v;
+  src.playbackRate.value = 1 + (Math.random() * 2 - 1) * pitchVariation;
 
   const gain = ctx.createGain();
   gain.gain.value = player.volume ?? 1;
   src.connect(gain);
   gain.connect(limiter);
   src.start();
-
-  hits.push({ x: Math.random(), y: Math.random(), t: performance.now() });
+  return true;
 }
 
 // ---------------------------------------------------------------- on-screen keyboard
@@ -223,6 +229,26 @@ document.addEventListener("keyup", (e) => {
   releaseKey(keyEl);
 });
 
+// ---------------------------------------------------------------- lock screen button
+// Plays the lock sound on touch-down (no pitch change), blanks the screen and
+// returns to standby, just like locking the phone.
+function lockScreen() {
+  if (mode !== "live") return;
+  playSound(keymap.lock, 0);
+  hits = [];
+  goStandby();
+}
+lockBtn.addEventListener("touchstart", (e) => { e.preventDefault(); lockScreen(); }, { passive: false });
+lockBtn.addEventListener("touchend", (e) => e.preventDefault(), { passive: false });
+lockBtn.addEventListener("mousedown", lockScreen); // for testing on a computer (or press Esc)
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") lockScreen(); });
+
+// The keyboard and the lock button always appear and disappear together.
+function showControls(show) {
+  kbEl.classList.toggle("hidden", !show);
+  lockBtn.classList.toggle("hidden", !show);
+}
+
 function clearKeys() {
   held.clear();
   kbEl.querySelectorAll(".down").forEach(releaseKey);
@@ -246,13 +272,13 @@ function goLive() {
   mode = "live";
   standbyEl.classList.add("hidden");
   clearKeys();
-  kbEl.classList.remove("hidden");
+  showControls(true);
   try { navigator.wakeLock?.request("screen").then((l) => (wakeLock = l)).catch(() => {}); } catch (e) {}
 }
 
 function goStandby() {
   mode = "standby";
-  kbEl.classList.add("hidden");
+  showControls(false);
   clearKeys();
   setupEl.classList.add("hidden");
   standbyEl.classList.remove("hidden");
@@ -262,7 +288,7 @@ function goStandby() {
 
 function goSetup() {
   mode = "setup";
-  kbEl.classList.add("hidden");
+  showControls(false);
   clearKeys();
   localStorage.removeItem("phonePercussionPlayer");
   standbyEl.classList.add("hidden");
@@ -408,7 +434,7 @@ function draw() {
   for (const h of hits) {
     const a = 1 - (now - h.t) / 600;
     fill(255, 200 * a);
-    circle(24 + h.x * (width - 48), 40 + h.y * (top - 60), 8 + 28 * (1 - a));
+    circle(24 + h.x * (width - 48), 90 + h.y * (top - 110), 8 + 28 * (1 - a)); // below the lock button
   }
 }
 
